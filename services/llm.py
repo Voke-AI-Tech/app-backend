@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 # New library initialization
 client = None
-if settings.GOOGLE_API_KEY and settings.GOOGLE_API_KEY != "YOUR_GOOGLE_API_KEY":
+if settings.GOOGLE_API_KEY:
     try:
         client = Client(api_key=settings.GOOGLE_API_KEY)
     except Exception as e:
