@@ -1,6 +1,6 @@
 import asyncio
 import warnings
-from backend.config.settings import Settings
+from config.settings import Settings
 
 warnings.filterwarnings("ignore")
 
