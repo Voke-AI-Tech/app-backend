@@ -2,7 +2,6 @@ import os
 import re
 import uuid
 import io
-from pydub import AudioSegment
 from pathlib import Path
 
 # Assuming a temporary directory for word clips, which should be managed by the application.
@@ -26,6 +25,7 @@ def find_mispronounced_words(clips: list[tuple[str, str, float]], threshold: flo
     return unique_mispronounced
 
 def extract_word_audio_clips(audio_buffer: io.BytesIO, segments: list) -> list[tuple[str, str, float]]:
+    from pydub import AudioSegment
     os.makedirs(WORD_CLIPS_TEMP_DIR, exist_ok=True)
     audio_buffer.seek(0) # Reset buffer to start
     audio = AudioSegment.from_file(audio_buffer) # Load from buffer

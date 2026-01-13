@@ -1,7 +1,5 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from models.schemas import EvaluateTopicalRequest
-from pipelines.topical_speech import topical_speech_pipeline
-from services.audio_utils import transcribe_audio_async
 import os
 import httpx
 import tempfile
@@ -39,6 +37,7 @@ async def evaluate_topical(request: EvaluateTopicalRequest, background_tasks: Ba
             
         # Transcribe audio
         logger.info("Starting transcription...")
+        from services.audio_utils import transcribe_audio_async
         segments = await transcribe_audio_async(tmp_audio_path)
         if not segments:
             logger.warning("No speech detected in audio.")
@@ -49,6 +48,7 @@ async def evaluate_topical(request: EvaluateTopicalRequest, background_tasks: Ba
         
         # Run pipeline
         logger.info("Running evaluation pipeline...")
+        from pipelines.topical_speech import topical_speech_pipeline
         results = await topical_speech_pipeline(
             name=request.name,
             audio_path=tmp_audio_path,

@@ -1,11 +1,11 @@
-import numpy as np
-import matplotlib
 import io
 import base64
-matplotlib.use("Agg")  # Use a non-GUI backend
-import matplotlib.pyplot as plt
 
 def plot_pentagon(scores: list[float]) -> str:
+    import numpy as np
+    import matplotlib
+    matplotlib.use("Agg")  # Use a non-GUI backend
+    import matplotlib.pyplot as plt
     labels = ["Grammar", "Vocabulary", "Fluency", "Pronunciation", "Filler Words"]
     angles = np.linspace(0, 2 * np.pi, len(scores), endpoint=False).tolist()
     scores += scores[:1]
@@ -25,6 +25,7 @@ def plot_pentagon(scores: list[float]) -> str:
     return f"data:image/png;base64,{base64_image}"
     
 def plot_fluency_curve(time_points: list[float], wpm_values: list[float]) -> str:
+    import matplotlib.pyplot as plt
     fig, ax = plt.subplots(figsize=(10, 5)) # Use fig, ax for consistent closing
     ax.plot(time_points, wpm_values, color="blue", linewidth=2)
 

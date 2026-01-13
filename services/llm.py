@@ -1,5 +1,3 @@
-from google.genai import Client
-from google.genai.types import Model
 from config.settings import Settings
 import re
 import random
@@ -10,20 +8,28 @@ logger = logging.getLogger(__name__)
 
 # New library initialization
 client = None
-if settings.GOOGLE_API_KEY:
-    try:
-        client = Client(api_key=settings.GOOGLE_API_KEY)
-    except Exception as e:
-        logger.error(f"Failed to initialize Gemini client: {e}")
+
+def _get_client():
+    global client
+    if client is not None:
+        return client
+    if settings.GOOGLE_API_KEY:
+        try:
+            from google.genai import Client
+            client = Client(api_key=settings.GOOGLE_API_KEY)
+        except Exception as e:
+            logger.error(f"Failed to initialize Gemini client: {e}")
+    return client
 
 def get_gemini_response(prompt: str) -> str | None:
-    if not client:
+    current_client = _get_client()
+    if not current_client:
         logger.warning("Gemini client not initialized. Skipping AI call.")
         return None
         
     try:
         logger.info("Starting Gemini AI call...")
-        response = client.models.generate_content(
+        response = current_client.models.generate_content(
             model=settings.MODEL,
             contents=prompt
         )
@@ -61,7 +67,7 @@ def improve_fluency_by_line(segments: list[dict]) -> list[dict]:
     lines = [seg["text"].strip() for seg in segments]
     
     # Optional: Skip AI if too many lines or other constraints
-    if not client:
+    if not _get_client():
         return [{"original": line, "improved": line, "boost": 0.0} for line in lines]
 
     prompt = "Revise the following sentences to sound more fluent and natural while preserving the meaning. Avoid repeating the input. Return each improved sentence on its own line, in the same order:\n\n"
@@ -88,7 +94,7 @@ def improve_fluency_by_line(segments: list[dict]) -> list[dict]:
     return result
 
 def is_filler_in_context(sentence: str, phrase: str) -> bool:
-    if not client:
+    if not _get_client():
         return False
 
     prompt = f"""
@@ -107,7 +113,7 @@ def is_filler_in_context(sentence: str, phrase: str) -> bool:
         return False
 
 def generate_report_summary_text(transcript: str, overall_score: float, grammar_score: float, vocabulary_score: float, fluency_score: float, pronunciation_score: float, filler_word_score: float) -> list[str]:
-    if not client:
+    if not _get_client():
         return ["AI summary skipped: Gemini client not available."]
 
     prompt = f"""

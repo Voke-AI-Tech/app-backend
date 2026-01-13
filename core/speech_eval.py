@@ -1,8 +1,5 @@
-import nltk
 import re
 import io
-from pydub import AudioSegment
-from services.llm import is_filler_in_context
 
 def extract_word_and_text(segments: list) -> tuple[list[str], str]:
     words = [w.word.strip() for seg in segments for w in seg.words]
@@ -10,6 +7,7 @@ def extract_word_and_text(segments: list) -> tuple[list[str], str]:
     return words, full_text
 
 def analyze_pauses_for_fillers(audio_buffer: io.BytesIO, segments: list, pause_threshold: float = 0.3, energy_threshold: int = 250) -> tuple[list[tuple[float, float, float]], int]:
+    from pydub import AudioSegment
     audio_buffer.seek(0) # Reset buffer to start
     audio = AudioSegment.from_file(audio_buffer) # Load from buffer
     silent_pauses = []
@@ -31,6 +29,8 @@ def analyze_pauses_for_fillers(audio_buffer: io.BytesIO, segments: list, pause_t
     return silent_pauses, vocalized_filler_count
 
 def advanced_filler_analysis(full_text: str, vocalized_filler_count: int) -> tuple[dict, float]:
+    import nltk
+    from services.llm import is_filler_in_context
     POTENTIAL_FILLERS = {"like", "so", "right", "you know", "basically", "actually"}
     sentences = nltk.sent_tokenize(full_text)
     contextual_filler_count = 0

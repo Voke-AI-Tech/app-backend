@@ -1,6 +1,5 @@
-import language_tool_python
-
 def grammar_score(text: str) -> tuple[int, float]:
+    import language_tool_python
     tool = language_tool_python.LanguageTool('en-US')
     matches = tool.check(text)
     grammar_errors = len(matches)

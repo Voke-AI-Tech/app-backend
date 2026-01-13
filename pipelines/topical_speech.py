@@ -1,17 +1,18 @@
-from core.speech_eval import extract_word_and_text, analyze_pauses_for_fillers, advanced_filler_analysis
-from core.grammar import grammar_score
-from core.vocabulary import vocabulary_score
-from core.fluency import fluency_score_f, compute_wpm_over_time
-from core.pronunciation import extract_word_audio_clips, pronunciation_score_f, find_mispronounced_words, WORD_CLIPS_TEMP_DIR
-from core.scoring import overall_score_f, cefr_score
-from services.llm import improve_fluency_by_line, generate_report_summary_text
-from services.visualization import plot_pentagon, plot_fluency_curve
-from reports.pdf_generator import generate_report
 import os
 import shutil
 import io
 
 async def topical_speech_pipeline(name: str, audio_path: str, segments: list, duration_seconds: float):
+    from core.speech_eval import extract_word_and_text, analyze_pauses_for_fillers, advanced_filler_analysis
+    from core.grammar import grammar_score
+    from core.vocabulary import vocabulary_score
+    from core.fluency import fluency_score_f, compute_wpm_over_time
+    from core.pronunciation import extract_word_audio_clips, pronunciation_score_f, find_mispronounced_words, WORD_CLIPS_TEMP_DIR
+    from core.scoring import overall_score_f, cefr_score
+    from services.llm import improve_fluency_by_line, generate_report_summary_text
+    from services.visualization import plot_pentagon, plot_fluency_curve
+    from reports.pdf_generator import generate_report
+
     words, full_text = extract_word_and_text(segments)
 
     # Read audio content once into an in-memory buffer
