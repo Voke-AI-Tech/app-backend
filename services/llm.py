@@ -1,6 +1,6 @@
 from google.genai import Client
 from google.genai.types import Model
-from backend.config.settings import Settings
+from config.settings import Settings
 import re
 import random
 import logging

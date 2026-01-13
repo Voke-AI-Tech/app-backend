@@ -2,7 +2,7 @@ import nltk
 import re
 import io
 from pydub import AudioSegment
-from backend.services.llm import is_filler_in_context
+from services.llm import is_filler_in_context
 
 def extract_word_and_text(segments: list) -> tuple[list[str], str]:
     words = [w.word.strip() for seg in segments for w in seg.words]

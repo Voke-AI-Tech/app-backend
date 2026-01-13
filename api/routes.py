@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks
-from backend.models.schemas import EvaluateTopicalRequest
-from backend.pipelines.topical_speech import topical_speech_pipeline
-from backend.services.audio_utils import transcribe_audio_async
+from models.schemas import EvaluateTopicalRequest
+from pipelines.topical_speech import topical_speech_pipeline
+from services.audio_utils import transcribe_audio_async
 import os
 import httpx
 import tempfile
