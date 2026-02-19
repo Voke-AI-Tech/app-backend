@@ -77,7 +77,6 @@ jsonschema==4.25.1
 jsonschema-specifications==2025.9.1
 julius==0.2.7
 kiwisolver==1.4.9
-language_tool_python==3.1.0
 lexical-diversity==0.1.1
 lightning==2.5.6
 lightning-utilities==0.15.2
