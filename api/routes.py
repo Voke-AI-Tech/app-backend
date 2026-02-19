@@ -71,6 +71,13 @@ async def evaluate_topical(request: EvaluateTopicalRequest, background_tasks: Ba
                 "mispronounced_words": results["mispronounced_words"],
                 "summary_points": results["summary_points"]
             },
+            "metrics": {
+                "words_per_minute": results["words_per_minute"],
+                "word_count": results["word_count"],
+                "pause_count": results["pause_count"],
+                "filler_words_data": results["filler_words_data"],
+                "fluency_over_time": results["fluency_over_time"],
+            },
             "transcription": " ".join([getattr(seg, "text", "") for seg in segments]),
             "pdf_filename": results.get("pdf_filename"),
             "warnings": []

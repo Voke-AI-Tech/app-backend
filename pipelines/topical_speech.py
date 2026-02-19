@@ -82,6 +82,12 @@ async def topical_speech_pipeline(name: str, audio_path: str, segments: list, du
         summary_html
     )
     
+    # Build fluency time-series for the client
+    fluency_over_time = [
+        {"time": t, "wpm": w}
+        for t, w in zip(time_points, wpm_values)
+    ]
+
     try:
         return {
             "pdf_bytes_io": pdf_bytes_io,
@@ -94,7 +100,12 @@ async def topical_speech_pipeline(name: str, audio_path: str, segments: list, du
             "filler_score": filler_score,
             "improved_lines": improved_lines,
             "mispronounced_words": mispronounced,
-            "summary_points": summary_points
+            "summary_points": summary_points,
+            "words_per_minute": round(wpm, 1),
+            "word_count": len(words),
+            "pause_count": len(silent_pauses),
+            "filler_words_data": filler_data,
+            "fluency_over_time": fluency_over_time,
         }
     finally:
         # Clean up the word_clips directory
