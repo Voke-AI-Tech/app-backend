@@ -1,14 +1,28 @@
 import logging
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes import router
 from config.settings import Settings
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Voke AI Speech Evaluation API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    settings = Settings()
+    missing = settings.missing_critical()
+    if missing:
+        logger.warning("Missing critical env vars: %s — AI features will be disabled", missing)
+    else:
+        logger.info("All critical env vars loaded (GOOGLE_API_KEY is set)")
+    yield
+
+
+app = FastAPI(title="Voke AI Speech Evaluation API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,18 +32,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.on_event("startup")
-def _check_config():
-    settings = Settings()
-    missing = settings.missing_critical()
-    if missing:
-        logger.warning("Missing critical env vars: %s — AI features will be disabled", missing)
-    else:
-        logger.info("All critical env vars loaded (GOOGLE_API_KEY is set)")
-
 @app.get("/")
 def root():
     return {"status": "ok", "message": "Voke AI backend is running"}
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
