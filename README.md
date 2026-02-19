@@ -1,15 +1,34 @@
-# app-backend
+---
+title: Voke AI Speech Evaluation API
+emoji: 🎙️
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 7860
+---
 
-## Environment variables and hosting notes
+# Voke AI Speech Evaluation API
 
-- This project expects secrets and API keys to be provided via environment variables. See `.env.example` for the names used.
-- When deploying to Render (or similar hosts), set the variables in the service's environment configuration (do NOT commit `.env` or `.env.local` to source control).
-- Locally you can copy `.env.example` to `.env` and fill values for development. The application uses `pydantic` settings to read from the environment.
+FastAPI backend for evaluating spoken English — grammar, vocabulary, fluency, pronunciation, and filler words.
 
-Required variables (examples):
+## Environment Variables
 
-- `GOOGLE_API_KEY` — API key for Google GenAI (if used)
-- `REPLICATE_API_TOKEN` — Replicate access token (if used)
-- `LAB11_API_KEY` — other LLM provider key (if used)
+Set these as **Secrets** in your Hugging Face Space settings:
 
-If you want, I can also create a small startup check that logs missing critical env variables on boot.
+| Variable | Required | Description |
+|---|---|---|
+| `GOOGLE_API_KEY` | Yes | Google Gemini API key |
+| `MODEL` | No | Gemini model (default: `models/gemini-2.5-flash`) |
+| `DEVICE` | No | `cpu` (default) or `cuda` |
+| `COMPUTE_TYPE` | No | `int8` (recommended for CPU) or `float16` |
+| `WHISPER_MODEL` | No | Whisper model size (default: `base`) |
+| `BATCH_SIZE` | No | Processing batch size (default: `16`) |
+
+## Local Development
+
+```bash
+cp .env.example .env
+# Fill in your API keys in .env
+pip install -r requirements.txt
+python main.py
+```

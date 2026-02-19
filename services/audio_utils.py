@@ -31,7 +31,7 @@ def _init_faster_model_if_needed():
     if WhisperModel is None:
         raise RuntimeError("faster_whisper is not available in this environment")
 
-    _faster_model = WhisperModel("large-v2", device=device, compute_type=compute_type)
+    _faster_model = WhisperModel(settings.WHISPER_MODEL, device=device, compute_type=compute_type)
     return _faster_model
 
 def transcribe_audio_library(path: str) -> list:
