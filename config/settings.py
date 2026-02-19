@@ -4,7 +4,7 @@ from typing import Optional, List
 class Settings(BaseSettings):
     # Secrets should come from environment variables (Render dashboard or .env locally)
     GOOGLE_API_KEY: Optional[str] = None
-    MODEL: str = "models/gemini-2.5-flash"
+    MODEL: str = "models/gemini-2.0-flash"
     REPLICATE_API_TOKEN: Optional[str] = None
     LAB11_API_KEY: Optional[str] = None
 
