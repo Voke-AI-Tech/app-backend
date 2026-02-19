@@ -15,6 +15,8 @@ app.add_middleware(
 )
 
 @app.get("/")
+def root():
+    return {"status": "ok", "message": "Voke AI backend is running"}
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
