@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: voke-ai-backend
+    runtime: python
+    plan: standard
+    buildCommand: ./build.sh
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: MODEL
+        value: models/gemini-2.5-flash
+      - key: DEVICE
+        value: cpu
+      - key: BATCH_SIZE
+        value: "16"
+      - key: COMPUTE_TYPE
+        value: int8
+      - key: WHISPER_MODEL
+        value: base
+      - key: PYTHON_VERSION
+        value: "3.11.11"
