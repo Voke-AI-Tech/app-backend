@@ -19,8 +19,8 @@ Set these as **Secrets** in your Hugging Face Space settings:
 |---|---|---|
 | `GOOGLE_API_KEY` | Yes | Google Gemini API key |
 | `MODEL` | No | Gemini model (default: `models/gemini-2.5-flash`) |
-| `DEVICE` | No | `cpu` (default) or `cuda` |
-| `COMPUTE_TYPE` | No | `int8` (recommended for CPU) or `float16` |
+| `DEVICE` | No | `cpu` (default) |
+| `COMPUTE_TYPE` | No | `int8` (default, recommended for CPU) |
 | `WHISPER_MODEL` | No | Whisper model size (default: `base`) |
 | `BATCH_SIZE` | No | Processing batch size (default: `16`) |
 

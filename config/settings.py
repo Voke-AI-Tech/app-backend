@@ -15,7 +15,7 @@ class Settings(BaseSettings):
 
     DEVICE: str = "cpu"
     BATCH_SIZE: int = 16
-    COMPUTE_TYPE: str = "float16"
+    COMPUTE_TYPE: str = "int8"
     WHISPER_MODEL: str = "base"
 
     class Config:
