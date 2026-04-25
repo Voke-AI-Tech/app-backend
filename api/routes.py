@@ -30,8 +30,10 @@ async def evaluate_topical(request: EvaluateTopicalRequest, background_tasks: Ba
     logger.info(f"Received evaluation request for: {request.name}")
     tmp_audio_path = None
     try:
-        # Create a temporary file to store the audio
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_audio_file:
+        # Preserve original extension so Whisper detects the format correctly
+        audio_url_path = request.audio_url.split("?")[0]
+        ext = os.path.splitext(audio_url_path)[-1] or ".m4a"
+        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp_audio_file:
             tmp_audio_path = tmp_audio_file.name
             logger.info(f"Downloading audio to {tmp_audio_path}...")
             async with httpx.AsyncClient() as client:
@@ -144,7 +146,11 @@ async def live_turn(request: LiveTurnRequest, background_tasks: BackgroundTasks)
 
     tmp_audio_path = None
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+        # Preserve original extension so Whisper and pydub detect the format correctly
+        audio_url_path = request.audio_url.split("?")[0]
+        ext = os.path.splitext(audio_url_path)[-1] or ".m4a"
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
             tmp_audio_path = tmp.name
             async with httpx.AsyncClient() as client:
                 response = await client.get(request.audio_url, timeout=30.0)
@@ -302,7 +308,11 @@ async def companion_turn(request: CompanionTurnRequest, background_tasks: Backgr
 
     tmp_audio_path = None
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+        # Preserve original extension so Whisper and pydub detect the format correctly
+        audio_url_path = request.audio_url.split("?")[0]
+        ext = os.path.splitext(audio_url_path)[-1] or ".m4a"
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
             tmp_audio_path = tmp.name
             async with httpx.AsyncClient() as client:
                 response = await client.get(request.audio_url, timeout=30.0)

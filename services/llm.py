@@ -126,8 +126,10 @@ def generate_live_reply(conversation_history: list[dict]) -> str:
 
     conversation_history: list of {"role": "user"|"system", "text": str}
     """
-    if not _get_client():
-        return "That's interesting! Tell me more."
+    current_client = _get_client()
+    if not current_client:
+        logger.error("generate_live_reply: Gemini client not initialized — check GOOGLE_API_KEY.")
+        return "[AI unavailable: API key missing]"
 
     history_text = ""
     for turn in conversation_history:
@@ -141,8 +143,15 @@ Here is the conversation so far:
 Now respond naturally as "You" in 1-2 sentences. Keep it conversational, engaging, and ask a follow-up question or make a comment that keeps the conversation going.
 Only return your reply, nothing else."""
 
-    response = get_gemini_response(prompt)
-    return response if response else "That's great! What else is on your mind?"
+    try:
+        response = current_client.models.generate_content(
+            model=settings.MODEL,
+            contents=prompt
+        )
+        return response.text.strip()
+    except Exception as e:
+        logger.error(f"generate_live_reply Gemini error: {e}")
+        return f"[AI error: {str(e)}]"
 
 # ---------------------------------------------------------------------------
 # Companion mode — scenario catalogue & role-aware Gemini functions
@@ -235,8 +244,10 @@ def generate_companion_reply(scenario: dict, conversation_history: list[dict]) -
 
     conversation_history: list of {{"role": "user"|"system", "text": str}}
     """
-    if not _get_client():
-        return "I see. Please go on."
+    current_client = _get_client()
+    if not current_client:
+        logger.error("generate_companion_reply: Gemini client not initialized — check GOOGLE_API_KEY.")
+        return "[AI unavailable: API key missing]"
 
     history_text = ""
     for turn in conversation_history:
@@ -250,8 +261,15 @@ Here is the conversation so far:
 Stay strictly in character. Respond naturally as "You" in 1-2 sentences. Keep the conversation going.
 Only return your reply, nothing else."""
 
-    response = get_gemini_response(prompt)
-    return response if response else "That's interesting. Tell me more."
+    try:
+        response = current_client.models.generate_content(
+            model=settings.MODEL,
+            contents=prompt
+        )
+        return response.text.strip()
+    except Exception as e:
+        logger.error(f"generate_companion_reply Gemini error: {e}")
+        return f"[AI error: {str(e)}]"
 
 
 def generate_report_summary_text(transcript: str, overall_score: float, grammar_score: float, vocabulary_score: float, fluency_score: float, pronunciation_score: float, filler_word_score: float) -> list[str]:
