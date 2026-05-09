@@ -3,9 +3,8 @@ from typing import Optional, List
 
 class Settings(BaseSettings):
     # Secrets should come from environment variables (Render dashboard or .env locally)
-    GOOGLE_API_KEY: Optional[str] = None  # kept for backwards compat, no longer used
-    OPENAI_API_KEY: Optional[str] = None
-    MODEL: str = "gpt-4o-mini"
+    GOOGLE_API_KEY: Optional[str] = None
+    MODEL: str = "models/gemini-1.5-flash"
     REPLICATE_API_TOKEN: Optional[str] = None
     LAB11_API_KEY: Optional[str] = None
 
@@ -30,7 +29,7 @@ class Settings(BaseSettings):
         This is only informational; callers can use it to log warnings during startup.
         """
         critical = [
-            "OPENAI_API_KEY",
+            "GOOGLE_API_KEY",
         ]
         missing: List[str] = []
         for name in critical:

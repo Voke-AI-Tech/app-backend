@@ -6,39 +6,39 @@ import logging
 settings = Settings()
 logger = logging.getLogger(__name__)
 
-_client = None
+client = None
 
 def _get_client():
-    global _client
-    if _client is not None:
-        return _client
-    if settings.OPENAI_API_KEY:
+    global client
+    if client is not None:
+        return client
+    if settings.GOOGLE_API_KEY:
         try:
-            from openai import OpenAI
-            _client = OpenAI(api_key=settings.OPENAI_API_KEY)
+            from google.genai import Client
+            client = Client(api_key=settings.GOOGLE_API_KEY)
         except Exception as e:
-            logger.error(f"Failed to initialize OpenAI client: {e}")
-    return _client
+            logger.error(f"Failed to initialize Gemini client: {e}")
+    return client
 
-def get_openai_response(prompt: str) -> str | None:
-    client = _get_client()
-    if not client:
-        logger.warning("OpenAI client not initialized. Skipping AI call.")
+def get_gemini_response(prompt: str) -> str | None:
+    current_client = _get_client()
+    if not current_client:
+        logger.warning("Gemini client not initialized. Skipping AI call.")
         return None
     try:
-        logger.info("Starting OpenAI API call...")
-        response = client.chat.completions.create(
+        logger.info("Starting Gemini AI call...")
+        response = current_client.models.generate_content(
             model=settings.MODEL,
-            messages=[{"role": "user", "content": prompt}],
+            contents=prompt
         )
-        logger.info("OpenAI API call completed successfully.")
-        return response.choices[0].message.content.strip()
+        logger.info("Gemini AI call completed successfully.")
+        return response.text.strip()
     except Exception as e:
-        logger.error(f"Error generating content from OpenAI: {e}")
+        logger.error(f"Error generating content from Gemini: {e}")
         return None
 
 def generate_hints(topic: str) -> list[str]:
-    raw_response = get_openai_response(
+    raw_response = get_gemini_response(
         f"""You are a smart hint generator. Generate 5 concise hints related to the topic "{topic.strip()}".
 Respond strictly with the 5 hints as a numbered list. No extra text.
 
@@ -68,7 +68,7 @@ def improve_fluency_by_line(segments: list[dict]) -> list[dict]:
         prompt += f"{i}. {line}\n"
 
     try:
-        response = get_openai_response(prompt)
+        response = get_gemini_response(prompt)
         improved_lines = response.strip().splitlines() if response else lines
     except Exception:
         improved_lines = lines
@@ -91,10 +91,10 @@ Is the phrase "{phrase}" used as a conversational filler (a word that adds no me
 For example, in "It was, like, cold," 'like' is a filler. But in "I like cold weather," 'like' is not.
 Answer with only 'Yes' or 'No'."""
     try:
-        response = get_openai_response(prompt)
+        response = get_gemini_response(prompt)
         return (response or "").strip().lower() == "yes"
     except Exception as e:
-        logger.error(f"OpenAI filler check error: {e}")
+        logger.error(f"Gemini filler check error: {e}")
         return False
 
 def generate_live_opening() -> str:
@@ -103,7 +103,7 @@ def generate_live_opening() -> str:
 Say a natural, short opening line (1-2 sentences) like you would say to someone you just met or are having a daily chat with.
 Keep it simple and open-ended so they have something to respond to.
 Only return the opening line, nothing else."""
-    response = get_openai_response(prompt)
+    response = get_gemini_response(prompt)
     return response if response else "Hey! How's your day going so far?"
 
 def generate_live_reply(conversation_history: list[dict]) -> str:
@@ -111,30 +111,35 @@ def generate_live_reply(conversation_history: list[dict]) -> str:
 
     conversation_history: list of {"role": "user"|"system", "text": str}
     """
-    client = _get_client()
-    if not client:
-        logger.error("generate_live_reply: OpenAI client not initialized — check OPENAI_API_KEY.")
+    current_client = _get_client()
+    if not current_client:
+        logger.error("generate_live_reply: Gemini client not initialized — check GOOGLE_API_KEY.")
         return "[AI unavailable: API key missing]"
 
-    messages = [
-        {"role": "system", "content": "You are having a casual, friendly real-life English conversation with someone practicing speaking. Respond naturally in 1-2 sentences. Keep it conversational and ask a follow-up question or make a comment that keeps the conversation going."}
-    ]
+    history_text = ""
     for turn in conversation_history:
-        role = "assistant" if turn["role"] == "system" else "user"
-        messages.append({"role": role, "content": turn["text"]})
+        label = "You" if turn["role"] == "system" else "User"
+        history_text += f"{label}: {turn['text']}\n"
+
+    prompt = f"""You are having a casual, friendly real-life English conversation with someone practicing speaking.
+Here is the conversation so far:
+
+{history_text}
+Now respond naturally as "You" in 1-2 sentences. Keep it conversational, engaging, and ask a follow-up question or make a comment that keeps the conversation going.
+Only return your reply, nothing else."""
 
     try:
-        response = client.chat.completions.create(
+        response = current_client.models.generate_content(
             model=settings.MODEL,
-            messages=messages,
+            contents=prompt
         )
-        return response.choices[0].message.content.strip()
+        return response.text.strip()
     except Exception as e:
-        logger.error(f"generate_live_reply OpenAI error: {e}")
+        logger.error(f"generate_live_reply Gemini error: {e}")
         return f"[AI error: {str(e)}]"
 
 # ---------------------------------------------------------------------------
-# Companion mode — scenario catalogue & role-aware OpenAI functions
+# Companion mode — scenario catalogue & role-aware Gemini functions
 # ---------------------------------------------------------------------------
 
 SCENARIOS: dict[str, dict] = {
@@ -216,34 +221,41 @@ def generate_companion_opening(scenario: dict) -> str:
 
 Start the conversation with a natural, short opening line (1-2 sentences) that fits your role and the situation.
 Only return the opening line, nothing else."""
-    response = get_openai_response(prompt)
+    response = get_gemini_response(prompt)
     return response if response else "Hello! How can I help you today?"
 
 def generate_companion_reply(scenario: dict, conversation_history: list[dict]) -> str:
     """Generate the character's next reply staying in role."""
-    client = _get_client()
-    if not client:
-        logger.error("generate_companion_reply: OpenAI client not initialized — check OPENAI_API_KEY.")
+    current_client = _get_client()
+    if not current_client:
+        logger.error("generate_companion_reply: Gemini client not initialized — check GOOGLE_API_KEY.")
         return "[AI unavailable: API key missing]"
 
-    messages = [{"role": "system", "content": scenario["system_persona"] + "\nStay strictly in character. Respond in 1-2 sentences. Keep the conversation going."}]
+    history_text = ""
     for turn in conversation_history:
-        role = "assistant" if turn["role"] == "system" else "user"
-        messages.append({"role": role, "content": turn["text"]})
+        label = "You" if turn["role"] == "system" else "User"
+        history_text += f"{label}: {turn['text']}\n"
+
+    prompt = f"""{scenario['system_persona']}
+
+Here is the conversation so far:
+{history_text}
+Stay strictly in character. Respond naturally as "You" in 1-2 sentences. Keep the conversation going.
+Only return your reply, nothing else."""
 
     try:
-        response = client.chat.completions.create(
+        response = current_client.models.generate_content(
             model=settings.MODEL,
-            messages=messages,
+            contents=prompt
         )
-        return response.choices[0].message.content.strip()
+        return response.text.strip()
     except Exception as e:
-        logger.error(f"generate_companion_reply OpenAI error: {e}")
+        logger.error(f"generate_companion_reply Gemini error: {e}")
         return f"[AI error: {str(e)}]"
 
 def generate_report_summary_text(transcript: str, overall_score: float, grammar_score: float, vocabulary_score: float, fluency_score: float, pronunciation_score: float, filler_word_score: float) -> list[str]:
     if not _get_client():
-        return ["AI summary skipped: OpenAI client not available."]
+        return ["AI summary skipped: Gemini client not available."]
 
     prompt = f"""Generate a concise 3-point summary for a speech analysis report.
 The speaker's overall performance was {overall_score}%.
@@ -256,7 +268,7 @@ Format the summary as a numbered list (1. ... 2. ... 3. ...).
 Each point should be a short, actionable insight or observation."""
 
     try:
-        summary_text = get_openai_response(prompt)
+        summary_text = get_gemini_response(prompt)
         if summary_text:
             points = re.split(r"^\d+\.\s*", summary_text, flags=re.MULTILINE)
             return [p.strip() for p in points if p.strip()]
