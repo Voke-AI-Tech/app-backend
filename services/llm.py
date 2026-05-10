@@ -20,7 +20,7 @@ def _get_client():
             logger.error(f"Failed to initialize Gemini client: {e}")
     return client
 
-GEMINI_MODEL = "gemini-2.0-flash-lite"
+GEMINI_MODEL = "gemini-1.5-flash-002"
 
 def get_gemini_response(prompt: str) -> str | None:
     current_client = _get_client()
