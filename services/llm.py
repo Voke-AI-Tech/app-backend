@@ -20,6 +20,8 @@ def _get_client():
             logger.error(f"Failed to initialize Gemini client: {e}")
     return client
 
+GEMINI_MODEL = "gemini-1.5-flash"
+
 def get_gemini_response(prompt: str) -> str | None:
     current_client = _get_client()
     if not current_client:
@@ -28,7 +30,7 @@ def get_gemini_response(prompt: str) -> str | None:
     try:
         logger.info("Starting Gemini AI call...")
         response = current_client.models.generate_content(
-            model=settings.MODEL,
+            model=GEMINI_MODEL,
             contents=prompt
         )
         logger.info("Gemini AI call completed successfully.")
@@ -130,7 +132,7 @@ Only return your reply, nothing else."""
 
     try:
         response = current_client.models.generate_content(
-            model=settings.MODEL,
+            model=GEMINI_MODEL,
             contents=prompt
         )
         return response.text.strip()
@@ -245,7 +247,7 @@ Only return your reply, nothing else."""
 
     try:
         response = current_client.models.generate_content(
-            model=settings.MODEL,
+            model=GEMINI_MODEL,
             contents=prompt
         )
         return response.text.strip()
