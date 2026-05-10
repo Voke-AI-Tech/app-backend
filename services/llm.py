@@ -15,9 +15,13 @@ def _get_client():
     if settings.GOOGLE_API_KEY:
         try:
             from google.genai import Client
+            masked = settings.GOOGLE_API_KEY[:8] + "..." + settings.GOOGLE_API_KEY[-4:]
+            logger.info(f"Initializing Gemini client with key: {masked}")
             client = Client(api_key=settings.GOOGLE_API_KEY)
         except Exception as e:
             logger.error(f"Failed to initialize Gemini client: {e}")
+    else:
+        logger.error("GOOGLE_API_KEY is not set!")
     return client
 
 GEMINI_MODEL = "gemini-2.0-flash"
