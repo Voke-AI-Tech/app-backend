@@ -24,7 +24,7 @@ def _get_client():
         logger.error("GOOGLE_API_KEY is not set!")
     return client
 
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-2.0-flash-lite"
 
 def get_gemini_response(prompt: str) -> str | None:
     current_client = _get_client()
