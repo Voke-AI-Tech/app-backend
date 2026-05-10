@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Voke AI Speech Evaluation API", lifespan=lifespan)
+app = FastAPI(title="Voke AI Speech Evaluation API", version="1.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
