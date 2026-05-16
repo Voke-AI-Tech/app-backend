@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi.responses import FileResponse
 from models.schemas import (
     EvaluateTopicalRequest,
     LiveStartRequest, LiveStartResponse,
@@ -13,9 +14,35 @@ import os
 import httpx
 import tempfile
 import logging
+from pathlib import Path
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+REPORTS_DIR = Path(__file__).parent.parent / "reports" / "generated"
+REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _save_pdf(pdf_bytes_io, pdf_filename: str) -> None:
+    if pdf_bytes_io is None or pdf_filename is None:
+        return
+    try:
+        pdf_bytes_io.seek(0)
+        (REPORTS_DIR / pdf_filename).write_bytes(pdf_bytes_io.read())
+    except Exception as e:
+        logger.warning(f"Failed to save PDF {pdf_filename}: {e}")
+
+
+@router.get("/report/{filename}")
+async def download_report(filename: str):
+    path = REPORTS_DIR / filename
+    if not path.exists() or not filename.endswith(".pdf"):
+        raise HTTPException(status_code=404, detail="Report not found.")
+    return FileResponse(
+        path=str(path),
+        media_type="application/pdf",
+        filename=filename,
+    )
 
 async def _cleanup_audio_file(path: str):
     try:
@@ -67,6 +94,9 @@ async def evaluate_topical(request: EvaluateTopicalRequest, background_tasks: Ba
             duration_seconds=duration_seconds
         )
         
+        # Save PDF to disk so it can be downloaded via /report/{filename}
+        _save_pdf(results.get("pdf_bytes_io"), results.get("pdf_filename"))
+
         # Format response contract
         response_data = {
             "scores": {
@@ -211,6 +241,8 @@ async def live_end(request: LiveEndRequest):
 
         if not results:
             raise HTTPException(status_code=500, detail="Evaluation pipeline returned no results.")
+
+        _save_pdf(results.get("pdf_bytes_io"), results.get("pdf_filename"))
 
         response_data = LiveEndResponse(
             scores={
@@ -373,6 +405,8 @@ async def companion_end(request: CompanionEndRequest):
 
         if not results:
             raise HTTPException(status_code=500, detail="Evaluation pipeline returned no results.")
+
+        _save_pdf(results.get("pdf_bytes_io"), results.get("pdf_filename"))
 
         response_data = CompanionEndResponse(
             scores={
